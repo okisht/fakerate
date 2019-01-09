@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 
 
 # fakerate
@@ -10,3 +11,6 @@ Users gonna choose their selection by similarity of original product.
 
 images will be shown from imgur directly, and url string after "/" will be their uniq id.
 
+=======
+# fakerate
+>>>>>>> cda19c8734bc0c51ae4c3f24925e41d456c43ca5
