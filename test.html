@@ -1,9 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
+<style>
+
+.prdimg img {
+  width: 25%;
+}
+
+</style>
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=, initial-scale=1.0">
   <meta http-equiv="X-UA-Compatible" content="ie=edge">
   <title>Document</title>
 </head>
@@ -12,19 +18,31 @@
   <input class="productUrl" type="text">
   <button onclick="applyImg()">apply</button>
   <br>
+  <div class='prdimg'>
+    <img src="" >
+  </div>
+  <input type="text" class="appliedprdurl" value="">
+  <div class="upRatings"></div>
+  <div class="downRatings"></div>
   <button onclick="postupvote()">upvote</button>
   <button onclick="postdownvote()">downvote</button>
-
 </body>
 
 <script src="https://code.jquery.com/jquery-3.1.1.min.js"></script>
 <script>
+
+
+const serviceurl = "http://localhost:4000/api/v1/";
   function applyImg() {
-
     newImgUrl = $('.productUrl').val();
-    var spliturl = $('.productUrl').val().split(".");
-    var newPdId = spliturl[2].split("/");
-
+    var spliturl = $('.productUrl').val().split(".com/");
+    if (spliturl[1].indexOf(".") > 0) {
+      var newPdId = spliturl[1].split(".");
+      newPdId = newPdId[0];
+    }
+    else {
+      var newPdId = spliturl[1]
+    }
     $.ajax({
       'url': 'http://localhost:4000/api/v1',
       'method': 'POST',
@@ -36,21 +54,21 @@
         upvotes: 0,
         downvotes: 0,
         wtb: "test",
-        productid: newPdId[1],
+        productid: newPdId,
       }),
       'success': function (data) {
-        console.log(data)
-        window.location.href = "http://localhost:4000/api/v1/"+data.productid;
+        console.log(data) // buraya loading gelecek
+        callappliedimg(newPdId);
+        $('.upRatings').append(data.upvotes);
+        $('.downRatings').append(data.downvotes);
       }
     });
-
   }
 
 
   function postupvote() {
-    /* get id dinamik alınacak */
-
-    $.get("http://localhost:4000/api/v1/ADtKScW", function (data) {
+    var getprdi = $('.appliedprdurl').attr("prdid");
+    $.get(serviceurl+getprdi, function (data) {
       var newupvts = parseInt(data.upvotes) + 1;
       var uniqid = data._id;
       var uniqidurl = "http://localhost:4000/api/v1/" + uniqid;
@@ -67,17 +85,63 @@
           "headers": {
             "Content-Type": "application/json",
             "cache-control": "no-cache",
-            "Postman-Token": "3c73b1e8-dd77-4f03-a2eb-5328fa047d22"
           },
           "processData": false,
           "data": "{\n    \"upvotes\": \"" + newupvtss + "\"\n}"
         }
       ).done(function (response) {
         console.log(response);
+        console.log(response.upvotes);
+        console.log(response.downvotes);
+        $('.upRatings').append(response.upvotes);
+        $('.downRatings').append(response.downvotes);
       });
     }
 
   }
-</script>
+
+  function postdownvote() {
+    var getprdi = $('.appliedprdurl').attr("prdid");
+    $.get(serviceurl+getprdi, function (data) {
+      var newudvts = parseInt(data.downvotes) + 1;
+      var uniqid = data._id;
+      var uniqidurl = "http://localhost:4000/api/v1/" + uniqid;
+      upvoteUpdate(uniqidurl, newudvts);
+    });
+
+    function upvoteUpdate(uniqidurll, newudvts) {
+      $.ajax(
+        {
+          "async": true,
+          "crossDomain": true,
+          "url": uniqidurll,
+          "method": "PUT",
+          "headers": {
+            "Content-Type": "application/json",
+            "cache-control": "no-cache",
+          },
+          "processData": false,
+          "data": "{\n    \"downvotes\": \"" + newudvts + "\"\n}"
+        }
+      ).done(function (response) {
+        console.log(response);
+        $('.upRatings').append(response.upvotes);
+        $('.downRatings').append(response.downvotes);
+      });
+    }
+
+  }
+
+
+  function callappliedimg(clewPdId) {
+
+    $.get(serviceurl+clewPdId, function (data) {
+      $('.prdimg img').attr("src",data.imgUrl);
+      $('.appliedprdurl').attr("value","http://localhost:4000/api/v1/"+data.productid );
+      $('.appliedprdurl').attr("prdid",data.productid );
+    });
+  }
+  
+  </script>
 
 </html>
